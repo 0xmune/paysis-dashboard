@@ -55,6 +55,7 @@ export default function DashboardPage() {
   const [rows, setRows] = useState<Row[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadResult, setUploadResult] = useState<{ newRecords: number; skipped: number } | null>(null)
   const [chartType, setChartType] = useState<'bar' | 'line' | 'pie'>('bar')
   const [groupCol, setGroupCol] = useState('')
@@ -82,14 +83,33 @@ export default function DashboardPage() {
     const file = e.target.files?.[0]
     if (!file) return
     setUploading(true)
+    setUploadProgress(0)
     setUploadResult(null)
+
+    const xhr = new XMLHttpRequest()
     const fd = new FormData()
     fd.append('file', file)
     fd.append('projectId', id)
-    const res = await fetch('/api/upload', { method: 'POST', body: fd })
-    const result = await res.json()
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        setUploadProgress(Math.round((event.loaded / event.total) * 90))
+      }
+    }
+
+    const result = await new Promise<{ newRecords: number; skipped: number }>((resolve, reject) => {
+      xhr.onload = () => {
+        setUploadProgress(100)
+        resolve(JSON.parse(xhr.responseText))
+      }
+      xhr.onerror = reject
+      xhr.open('POST', '/api/upload')
+      xhr.send(fd)
+    })
+
     setUploadResult(result)
     setUploading(false)
+    setUploadProgress(0)
     e.target.value = ''
     fetchData()
   }
@@ -117,10 +137,20 @@ export default function DashboardPage() {
           <h1 className="text-lg font-bold">Paysis Dashboard</h1>
           <p className="text-slate-400 text-xs mt-0.5">Project ID: {id}</p>
         </div>
-        <label className="cursor-pointer bg-white text-slate-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition">
-          {uploading ? '업로드 중...' : '파일 업로드'}
-          <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={handleUpload} disabled={uploading} />
-        </label>
+        <div className="flex flex-col items-end gap-1">
+          <label className={`cursor-pointer bg-white text-slate-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+            {uploading ? `업로드 중... ${uploadProgress}%` : '파일 업로드'}
+            <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={handleUpload} disabled={uploading} />
+          </label>
+          {uploading && (
+            <div className="w-40 bg-slate-700 rounded-full h-1.5">
+              <div
+                className="bg-white h-1.5 rounded-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          )}
+        </div>
       </header>
 
       <div className="max-w-7xl mx-auto p-6 space-y-6">
