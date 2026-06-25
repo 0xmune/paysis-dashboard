@@ -8,12 +8,21 @@ datasource db {
 }
 
 model Project {
+  id              String           @id @default(cuid())
+  name            String
+  password        String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  records         Record[]
+  dashboardConfig DashboardConfig?
+}
+
+model DashboardConfig {
   id        String   @id @default(cuid())
-  name      String
-  password  String
-  createdAt DateTime @default(now())
+  projectId String   @unique
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  config    Json
   updatedAt DateTime @updatedAt
-  records   Record[]
 }
 
 model Record {
