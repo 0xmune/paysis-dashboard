@@ -97,21 +97,26 @@ export default function DashboardPage() {
       }
     }
 
-    const result = await new Promise<{ newRecords: number; skipped: number }>((resolve, reject) => {
+    const result = await new Promise<{ newRecords: number; skipped: number; error?: string }>((resolve, reject) => {
       xhr.onload = () => {
         setUploadProgress(100)
-        resolve(JSON.parse(xhr.responseText))
+        try {
+          resolve(JSON.parse(xhr.responseText))
+        } catch {
+          reject(new Error('응답 파싱 실패'))
+        }
       }
-      xhr.onerror = reject
+      xhr.onerror = () => reject(new Error('네트워크 오류'))
       xhr.open('POST', '/api/upload')
       xhr.send(fd)
     })
 
     setUploadResult(result)
+    await fetchData()
+    await new Promise(r => setTimeout(r, 1500))
     setUploading(false)
     setUploadProgress(0)
     e.target.value = ''
-    fetchData()
   }
 
   const filteredRows = search
@@ -145,7 +150,7 @@ export default function DashboardPage() {
           {uploading && (
             <div className="w-40 bg-slate-700 rounded-full h-1.5">
               <div
-                className="bg-white h-1.5 rounded-full transition-all duration-300"
+                className={`h-1.5 rounded-full transition-all duration-300 ${uploadProgress === 100 ? 'bg-green-400' : 'bg-white'}`}
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
