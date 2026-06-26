@@ -234,7 +234,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2">
             {editMode ? (
               <>
-                <button onClick={addWidget}
+                <button onClick={() => addWidget()}
                   className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition">
                   + 위젯 추가
                 </button>
@@ -370,8 +370,6 @@ export default function DashboardPage() {
         </main>
       </div>
 
-      </div>{/* end flex-1 main */}
-
       {/* AI Chat Panel */}
       {showAiChat && (
         <div className="w-80 flex-shrink-0 bg-white border-l border-gray-200 flex flex-col shadow-lg">
@@ -394,8 +392,7 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-
-      </div>{/* end flex-1 flex */}
+      </div>
 
       {/* Segment Builder Modal */}
       {showSegmentBuilder && (
