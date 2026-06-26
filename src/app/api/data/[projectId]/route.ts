@@ -5,8 +5,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pro
   const { projectId } = await params
   const records = await prisma.record.findMany({
     where: { projectId },
-    orderBy: { createdAt: 'desc' },
-    take: 5000,
+    orderBy: { createdAt: 'asc' },
   })
   return NextResponse.json(records.map((r) => r.data))
 }
