@@ -78,8 +78,8 @@ export default function AiChat({ config, columns, onConfigChange }: Props) {
               msg.role === 'user'
                 ? 'bg-blue-600 text-white'
                 : msg.error
-                ? 'bg-red-900/30 border border-red-800 text-red-400'
-                : 'bg-slate-800 text-slate-300'
+                ? 'bg-red-50 border border-red-200 text-red-600'
+                : 'bg-gray-100 text-gray-700'
             }`}>
               {msg.text}
             </div>
@@ -87,7 +87,7 @@ export default function AiChat({ config, columns, onConfigChange }: Props) {
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-slate-800 rounded-xl px-3 py-2 text-xs text-slate-500">
+            <div className="bg-gray-100 rounded-xl px-3 py-2 text-xs text-gray-400">
               생각 중...
             </div>
           </div>
@@ -102,7 +102,7 @@ export default function AiChat({ config, columns, onConfigChange }: Props) {
             key={i}
             onClick={() => send(s)}
             disabled={loading}
-            className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 px-2 py-1 rounded-lg transition disabled:opacity-40"
+            className="text-xs bg-purple-50 hover:bg-purple-100 text-purple-600 px-2 py-1 rounded-lg transition disabled:opacity-40 border border-purple-200"
           >
             {s}
           </button>
@@ -110,7 +110,7 @@ export default function AiChat({ config, columns, onConfigChange }: Props) {
       </div>
 
       {/* Input */}
-      <div className="border-t border-slate-800 p-3 flex gap-2">
+      <div className="border-t border-gray-200 p-3 flex gap-2">
         <input
           type="text"
           value={input}
@@ -118,7 +118,7 @@ export default function AiChat({ config, columns, onConfigChange }: Props) {
           onKeyDown={e => e.key === 'Enter' && send()}
           placeholder="예: KPI에 송금횟수 추가해줘"
           disabled={loading}
-          className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+          className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-50 text-gray-800"
         />
         <button
           onClick={() => send()}

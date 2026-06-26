@@ -173,13 +173,13 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-950 text-white overflow-hidden">
+    <div className="flex h-screen bg-gray-50 text-gray-900 overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-52 flex-shrink-0 bg-slate-900 flex flex-col border-r border-slate-800">
-        <div className="px-4 py-5 border-b border-slate-800">
+      <aside className="w-52 flex-shrink-0 bg-white flex flex-col border-r border-gray-200">
+        <div className="px-4 py-5 border-b border-gray-200">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center text-xs font-bold">S</div>
-            <span className="font-semibold text-sm">Segment Analytics</span>
+            <div className="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center text-xs font-bold text-white">S</div>
+            <span className="font-semibold text-sm text-gray-800">Segment Analytics</span>
           </div>
         </div>
 
@@ -192,26 +192,26 @@ export default function DashboardPage() {
                 if (item.id === 'settings') { setShowSettings(true); setActiveNav('settings'); return }
                 setActiveNav(item.id)
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition ${activeNav === item.id ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition ${activeNav === item.id ? 'bg-blue-600 text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}
             >
               <span>{item.icon}</span>{item.label}
             </button>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-800 space-y-1.5">
-          <p className="text-xs text-slate-500 font-medium mb-2">프로젝트 정보</p>
+        <div className="p-4 border-t border-gray-200 space-y-1.5">
+          <p className="text-xs text-gray-400 font-medium mb-2">프로젝트 정보</p>
           <div className="flex justify-between text-xs">
-            <span className="text-slate-500">레코드</span>
-            <span className="text-slate-300">{rows.length.toLocaleString()}건</span>
+            <span className="text-gray-400">레코드</span>
+            <span className="text-gray-700">{rows.length.toLocaleString()}건</span>
           </div>
           <div className="flex justify-between text-xs">
-            <span className="text-slate-500">세그먼트</span>
-            <span className="text-slate-300">{config.segments.length}개</span>
+            <span className="text-gray-400">세그먼트</span>
+            <span className="text-gray-700">{config.segments.length}개</span>
           </div>
           <div className="flex justify-between text-xs">
-            <span className="text-slate-500">위젯</span>
-            <span className="text-slate-300">{config.widgets.length}개</span>
+            <span className="text-gray-400">위젯</span>
+            <span className="text-gray-700">{config.widgets.length}개</span>
           </div>
           <button onClick={() => router.push('/')}
             className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 rounded-lg transition font-medium">
@@ -224,10 +224,10 @@ export default function DashboardPage() {
       <div className="flex-1 flex overflow-hidden">
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-slate-900 border-b border-slate-800 px-6 py-3 flex items-center justify-between flex-shrink-0">
+        <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between flex-shrink-0 shadow-sm">
           <div className="flex items-center gap-3">
-            <h1 className="text-base font-bold">{projectName}</h1>
-            <span className="text-xs text-slate-500 bg-slate-800 px-2 py-0.5 rounded">
+            <h1 className="text-base font-bold text-gray-900">{projectName}</h1>
+            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
               {id.slice(0, 7).toUpperCase()}
             </span>
           </div>
@@ -235,11 +235,11 @@ export default function DashboardPage() {
             {editMode ? (
               <>
                 <button onClick={addWidget}
-                  className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg transition">
+                  className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition">
                   + 위젯 추가
                 </button>
                 <button onClick={() => setShowSegmentBuilder(true)}
-                  className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg transition">
+                  className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition">
                   ◈ 세그먼트
                 </button>
                 <button onClick={handleSave} disabled={saving}
@@ -247,22 +247,22 @@ export default function DashboardPage() {
                   {saving ? '저장 중...' : '저장'}
                 </button>
                 <button onClick={() => { setEditMode(false); fetchConfig() }}
-                  className="text-xs text-slate-500 hover:text-white px-3 py-1.5 rounded-lg transition">
+                  className="text-xs text-gray-400 hover:text-gray-700 px-3 py-1.5 rounded-lg transition">
                   취소
                 </button>
               </>
             ) : (
               <>
                 <button onClick={() => setShowAiChat(v => !v)}
-                  className={`text-xs px-3 py-1.5 rounded-lg transition font-medium ${showAiChat ? 'bg-purple-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'}`}>
+                  className={`text-xs px-3 py-1.5 rounded-lg transition font-medium border ${showAiChat ? 'bg-purple-600 text-white border-purple-600' : 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200'}`}>
                   ✦ AI 편집
                 </button>
                 <button onClick={() => setEditMode(true)}
-                  className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition">
+                  className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition border border-gray-200">
                   ✏ 수동 편집
                 </button>
                 <button onClick={() => router.push(`/dashboard/${id}/upload`)}
-                  className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition">
+                  className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition border border-gray-200">
                   ↑ 업로드
                 </button>
               </>
@@ -272,11 +272,11 @@ export default function DashboardPage() {
 
         {/* Filter Bar */}
         {rows.length > 0 && (
-          <div className="bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center gap-2 flex-wrap flex-shrink-0">
+          <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center gap-2 flex-wrap flex-shrink-0">
             {categoryCols.slice(0, 4).map(col => (
               <select key={col} value={filterCategory[col] || ''}
                 onChange={e => setFilterCategory(prev => ({ ...prev, [col]: e.target.value }))}
-                className="bg-slate-800 border border-slate-700 text-slate-300 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                className="bg-white border border-gray-300 text-gray-700 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
                 <option value="">{col} 전체</option>
                 {[...new Set(rows.map(r => String(r[col] ?? '')))].slice(0, 50).map(v => (
                   <option key={v} value={v}>{v}</option>
@@ -286,7 +286,7 @@ export default function DashboardPage() {
             {config.segments.length > 0 && (
               <select value={activeSegmentId}
                 onChange={e => setActiveSegmentId(e.target.value)}
-                className="bg-slate-800 border border-slate-700 text-slate-300 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-purple-500">
+                className="bg-white border border-gray-300 text-gray-700 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-purple-500">
                 <option value="">세그먼트 전체</option>
                 {config.segments.map(s => (
                   <option key={s.id} value={s.id}>{s.name}</option>
@@ -295,7 +295,7 @@ export default function DashboardPage() {
             )}
             {(Object.values(filterCategory).some(Boolean) || activeSegmentId) && (
               <button onClick={() => { setFilterCategory({}); setActiveSegmentId('') }}
-                className="text-xs text-slate-500 hover:text-red-400 transition ml-auto">
+                className="text-xs text-gray-400 hover:text-red-500 transition ml-auto">
                 ✕ 필터 초기화
               </button>
             )}
@@ -304,19 +304,19 @@ export default function DashboardPage() {
 
         {/* Edit Mode Banner */}
         {editMode && (
-          <div className="bg-blue-900/30 border-b border-blue-800 px-6 py-2 flex items-center gap-2">
-            <span className="text-blue-400 text-xs font-medium">✏ 편집 모드</span>
-            <span className="text-slate-500 text-xs">위젯 제목/타입/컬럼을 수정하고 저장하세요.</span>
+          <div className="bg-blue-50 border-b border-blue-200 px-6 py-2 flex items-center gap-2">
+            <span className="text-blue-600 text-xs font-medium">✏ 편집 모드</span>
+            <span className="text-gray-500 text-xs">위젯 제목/타입/컬럼을 수정하고 저장하세요.</span>
           </div>
         )}
 
         {/* Dashboard Grid */}
         <main className="flex-1 overflow-y-auto p-5">
           {loading ? (
-            <div className="flex items-center justify-center h-64 text-slate-600 text-sm">데이터 로딩 중...</div>
+            <div className="flex items-center justify-center h-64 text-gray-400 text-sm">데이터 로딩 중...</div>
           ) : rows.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 gap-4">
-              <p className="text-slate-600 text-sm">업로드된 데이터가 없어요.</p>
+              <p className="text-gray-400 text-sm">업로드된 데이터가 없어요.</p>
               <button onClick={() => router.push(`/dashboard/${id}/upload`)}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition">
                 데이터 업로드하기
@@ -351,7 +351,7 @@ export default function DashboardPage() {
                     ))}
                     {editMode && (
                       <button onClick={() => addWidget(row)}
-                        className="w-12 flex-shrink-0 border-2 border-dashed border-slate-800 hover:border-blue-500 rounded-xl text-slate-700 hover:text-blue-400 transition flex items-center justify-center text-lg">
+                        className="w-12 flex-shrink-0 border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-xl text-gray-400 hover:text-blue-500 transition flex items-center justify-center text-lg">
                         +
                       </button>
                     )}
@@ -361,7 +361,7 @@ export default function DashboardPage() {
 
               {editMode && (
                 <button onClick={() => addWidget()}
-                  className="w-full h-16 border-2 border-dashed border-slate-800 hover:border-blue-500 rounded-xl text-slate-600 hover:text-blue-400 transition flex items-center justify-center gap-2 text-sm">
+                  className="w-full h-16 border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-xl text-gray-400 hover:text-blue-500 transition flex items-center justify-center gap-2 text-sm">
                   <span>+</span> 새 줄에 위젯 추가
                 </button>
               )}
@@ -374,13 +374,13 @@ export default function DashboardPage() {
 
       {/* AI Chat Panel */}
       {showAiChat && (
-        <div className="w-80 flex-shrink-0 bg-slate-900 border-l border-slate-800 flex flex-col">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+        <div className="w-80 flex-shrink-0 bg-white border-l border-gray-200 flex flex-col shadow-lg">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-purple-50">
             <div className="flex items-center gap-2">
-              <span className="text-purple-400">✦</span>
-              <span className="text-sm font-medium">AI 대시보드 편집</span>
+              <span className="text-purple-500">✦</span>
+              <span className="text-sm font-semibold text-purple-800">AI 대시보드 편집</span>
             </div>
-            <button onClick={() => setShowAiChat(false)} className="text-slate-500 hover:text-white transition">✕</button>
+            <button onClick={() => setShowAiChat(false)} className="text-gray-400 hover:text-gray-700 transition">✕</button>
           </div>
           <div className="flex-1 overflow-hidden">
             <AiChat
@@ -409,22 +409,22 @@ export default function DashboardPage() {
 
       {/* Settings Modal */}
       {showSettings && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h2 className="text-lg font-bold mb-4">프로젝트 설정</h2>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <h2 className="text-lg font-bold mb-4 text-gray-900">프로젝트 설정</h2>
             <div className="space-y-3 mb-6">
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">새 프로젝트 이름</label>
+                <label className="text-xs text-gray-500 mb-1 block">새 프로젝트 이름</label>
                 <input type="text" value={newName} onChange={e => setNewName(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900" />
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">비밀번호 확인</label>
+                <label className="text-xs text-gray-500 mb-1 block">비밀번호 확인</label>
                 <input type="password" value={settingsPassword} onChange={e => setSettingsPassword(e.target.value)}
                   placeholder="현재 비밀번호"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900" />
               </div>
-              {settingsError && <p className="text-red-400 text-sm">{settingsError}</p>}
+              {settingsError && <p className="text-red-500 text-sm">{settingsError}</p>}
             </div>
             <div className="flex gap-2">
               <button onClick={handleRename} disabled={settingsLoading || !newName || !settingsPassword}
@@ -432,11 +432,11 @@ export default function DashboardPage() {
                 {settingsLoading ? '처리 중...' : '이름 변경'}
               </button>
               <button onClick={handleDelete} disabled={settingsLoading || !settingsPassword}
-                className="px-4 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg text-sm font-medium transition disabled:opacity-50">
+                className="px-4 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg text-sm font-medium transition disabled:opacity-50">
                 삭제
               </button>
               <button onClick={() => { setShowSettings(false); setSettingsPassword(''); setSettingsError(''); setActiveNav('dashboard') }}
-                className="px-4 bg-slate-700 hover:bg-slate-600 text-slate-300 py-2 rounded-lg text-sm font-medium transition">
+                className="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 rounded-lg text-sm font-medium transition">
                 취소
               </button>
             </div>
