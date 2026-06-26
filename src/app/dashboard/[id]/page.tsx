@@ -53,6 +53,8 @@ export default function DashboardPage() {
   const [saving, setSaving] = useState(false)
   const [filterCategory, setFilterCategory] = useState<Record<string, string>>({})
   const [activeSegmentId, setActiveSegmentId] = useState<string>('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
 
   // Settings modal
   const [showSettings, setShowSettings] = useState(false)
@@ -82,7 +84,7 @@ export default function DashboardPage() {
     if (name) { setProjectName(name); setNewName(name) }
   }, [fetchData, fetchConfig])
 
-  const { numericCols, categoryCols } = useMemo(() => detectColumns(rows), [rows])
+  const { numericCols, categoryCols, dateCols } = useMemo(() => detectColumns(rows), [rows])
 
   useEffect(() => {
     if (!loading && rows.length > 0 && config.widgets.length === 0) {
@@ -271,36 +273,54 @@ export default function DashboardPage() {
         </header>
 
         {/* Filter Bar */}
-        {rows.length > 0 && (
-          <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center gap-2 flex-wrap flex-shrink-0">
-            {categoryCols.slice(0, 4).map(col => (
-              <select key={col} value={filterCategory[col] || ''}
-                onChange={e => setFilterCategory(prev => ({ ...prev, [col]: e.target.value }))}
-                className="bg-white border border-gray-300 text-gray-700 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                <option value="">{col} 전체</option>
-                {[...new Set(rows.map(r => String(r[col] ?? '')))].slice(0, 50).map(v => (
-                  <option key={v} value={v}>{v}</option>
-                ))}
-              </select>
-            ))}
-            {config.segments.length > 0 && (
-              <select value={activeSegmentId}
-                onChange={e => setActiveSegmentId(e.target.value)}
-                className="bg-white border border-gray-300 text-gray-700 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-purple-500">
-                <option value="">세그먼트 전체</option>
-                {config.segments.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-            )}
-            {(Object.values(filterCategory).some(Boolean) || activeSegmentId) && (
-              <button onClick={() => { setFilterCategory({}); setActiveSegmentId('') }}
-                className="text-xs text-gray-400 hover:text-red-500 transition ml-auto">
-                ✕ 필터 초기화
-              </button>
-            )}
-          </div>
-        )}
+        <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center gap-2 flex-wrap flex-shrink-0">
+          {/* 기간 필터 (항상 표시) */}
+          <span className="text-xs text-gray-400 font-medium">기간</span>
+          <input
+            type="date"
+            value={startDate}
+            onChange={e => setStartDate(e.target.value)}
+            className="bg-white border border-gray-300 text-gray-700 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+          <span className="text-xs text-gray-400">~</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={e => setEndDate(e.target.value)}
+            className="bg-white border border-gray-300 text-gray-700 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+          {rows.length > 0 && (
+            <>
+              <div className="w-px h-4 bg-gray-200 mx-1" />
+              {categoryCols.slice(0, 3).map(col => (
+                <select key={col} value={filterCategory[col] || ''}
+                  onChange={e => setFilterCategory(prev => ({ ...prev, [col]: e.target.value }))}
+                  className="bg-white border border-gray-300 text-gray-700 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                  <option value="">{col} 전체</option>
+                  {[...new Set(rows.map(r => String(r[col] ?? '')))].slice(0, 50).map(v => (
+                    <option key={v} value={v}>{v}</option>
+                  ))}
+                </select>
+              ))}
+              {config.segments.length > 0 && (
+                <select value={activeSegmentId}
+                  onChange={e => setActiveSegmentId(e.target.value)}
+                  className="bg-white border border-gray-300 text-gray-700 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-purple-500">
+                  <option value="">세그먼트 전체</option>
+                  {config.segments.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              )}
+            </>
+          )}
+          {(startDate || endDate || Object.values(filterCategory).some(Boolean) || activeSegmentId) && (
+            <button onClick={() => { setFilterCategory({}); setActiveSegmentId(''); setStartDate(''); setEndDate('') }}
+              className="text-xs text-gray-400 hover:text-red-500 transition ml-auto">
+              ✕ 초기화
+            </button>
+          )}
+        </div>
 
         {/* Edit Mode Banner */}
         {editMode && (
@@ -326,9 +346,22 @@ export default function DashboardPage() {
             <div className="space-y-4">
               {widgetRows.map(({ row, widgets: rowWidgets }) => {
                 const globalFilteredRows = rows.filter(r => {
+                  // 날짜 범위 필터
+                  if ((startDate || endDate) && dateCols.length > 0) {
+                    const rawDate = String(r[dateCols[0]] ?? '')
+                    const normalized = rawDate.replace(/\./g, '-').replace(/년\s*/g, '-').replace(/월\s*/g, '-').replace(/일/g, '').trim()
+                    const d = new Date(normalized)
+                    if (!isNaN(d.getTime())) {
+                      const dateStr = d.toISOString().slice(0, 10)
+                      if (startDate && dateStr < startDate) return false
+                      if (endDate && dateStr > endDate) return false
+                    }
+                  }
+                  // 카테고리 필터
                   for (const [col, val] of Object.entries(filterCategory)) {
                     if (val && String(r[col] ?? '') !== val) return false
                   }
+                  // 세그먼트 필터
                   if (activeSegmentId) {
                     const seg = config.segments.find(s => s.id === activeSegmentId)
                     if (seg) return applySegment([r], seg).length > 0
