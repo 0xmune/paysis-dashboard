@@ -1,7 +1,6 @@
 export type Row = Record<string, string | number | null>
 
 export type WidgetType = 'kpi' | 'bar' | 'line' | 'pie' | 'table'
-export type WidgetSize = 'sm' | 'md' | 'lg'
 export type Period = 'daily' | 'weekly' | 'monthly'
 
 export type Widget = {
@@ -11,7 +10,7 @@ export type Widget = {
   valueCol: string
   groupCol: string
   period: Period
-  size: WidgetSize
+  row: number
   segmentId?: string
 }
 

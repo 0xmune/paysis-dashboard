@@ -107,15 +107,6 @@ export default function WidgetCard({ widget, rows, segments, editMode, onUpdate,
             </select>
           </div>
           <div>
-            <label className="text-xs text-slate-500 block mb-1">크기</label>
-            <select value={widget.size} onChange={e => onUpdate({ size: e.target.value as Widget['size'] })}
-              className="w-full bg-slate-700 border border-slate-600 text-xs rounded px-2 py-1.5 focus:outline-none">
-              <option value="sm">작게 (1/3)</option>
-              <option value="md">중간 (1/2)</option>
-              <option value="lg">크게 (전체)</option>
-            </select>
-          </div>
-          <div>
             <label className="text-xs text-slate-500 block mb-1">수치 컬럼</label>
             <select value={widget.valueCol} onChange={e => onUpdate({ valueCol: e.target.value })}
               className="w-full bg-slate-700 border border-slate-600 text-xs rounded px-2 py-1.5 focus:outline-none">

@@ -3,12 +3,13 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Widget, DashboardConfig, Segment } from '@/lib/types'
-import { detectColumns } from '@/lib/dataUtils'
+import { detectColumns, applySegment } from '@/lib/dataUtils'
 import type { Row } from '@/lib/types'
 import dynamic from 'next/dynamic'
 
 const WidgetCard = dynamic(() => import('@/components/WidgetCard'), { ssr: false })
 const SegmentBuilder = dynamic(() => import('@/components/SegmentBuilder'), { ssr: false })
+const AiChat = dynamic(() => import('@/components/AiChat'), { ssr: false })
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: '전체 대시보드', icon: '▦' },
@@ -17,55 +18,21 @@ const NAV_ITEMS = [
   { id: 'settings', label: '프로젝트 관리', icon: '⚙' },
 ]
 
-const SIZE_CLASS: Record<string, string> = {
-  sm: 'col-span-1',
-  md: 'col-span-2',
-  lg: 'col-span-3',
-}
 
 function defaultConfig(numericCols: string[], categoryCols: string[]): DashboardConfig {
   const widgets: Widget[] = []
+  // Row 0: KPI 카드들 (최대 4개 균등 배치)
   numericCols.slice(0, 4).forEach((col, i) => {
-    widgets.push({
-      id: `kpi-${i}`,
-      type: 'kpi',
-      title: col,
-      valueCol: col,
-      groupCol: categoryCols[0] ?? '',
-      period: 'monthly',
-      size: 'sm',
-    })
+    widgets.push({ id: `kpi-${i}`, type: 'kpi', title: col, valueCol: col, groupCol: categoryCols[0] ?? '', period: 'monthly', row: 0 })
   })
+  // Row 1: 라인 차트
   if (numericCols[0]) {
-    widgets.push({
-      id: 'chart-0',
-      type: 'line',
-      title: `${numericCols[0]} 추이`,
-      valueCol: numericCols[0],
-      groupCol: categoryCols[0] ?? '',
-      period: 'monthly',
-      size: 'lg',
-    })
+    widgets.push({ id: 'chart-0', type: 'line', title: `${numericCols[0]} 추이`, valueCol: numericCols[0], groupCol: categoryCols[0] ?? '', period: 'monthly', row: 1 })
   }
+  // Row 2: 막대 + 파이
   if (numericCols[0] && categoryCols[0]) {
-    widgets.push({
-      id: 'chart-1',
-      type: 'bar',
-      title: `${categoryCols[0]}별 ${numericCols[0]}`,
-      valueCol: numericCols[0],
-      groupCol: categoryCols[0],
-      period: 'monthly',
-      size: 'md',
-    })
-    widgets.push({
-      id: 'chart-2',
-      type: 'pie',
-      title: `${categoryCols[0]} 비중`,
-      valueCol: numericCols[0],
-      groupCol: categoryCols[0],
-      period: 'monthly',
-      size: 'sm',
-    })
+    widgets.push({ id: 'chart-1', type: 'bar', title: `${categoryCols[0]}별 ${numericCols[0]}`, valueCol: numericCols[0], groupCol: categoryCols[0], period: 'monthly', row: 2 })
+    widgets.push({ id: 'chart-2', type: 'pie', title: `${categoryCols[0]} 비중`, valueCol: numericCols[0], groupCol: categoryCols[0], period: 'monthly', row: 2 })
   }
   return { widgets, segments: [] }
 }
@@ -82,7 +49,10 @@ export default function DashboardPage() {
   const [config, setConfig] = useState<DashboardConfig>({ widgets: [], segments: [] })
   const [editMode, setEditMode] = useState(false)
   const [showSegmentBuilder, setShowSegmentBuilder] = useState(false)
+  const [showAiChat, setShowAiChat] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [filterCategory, setFilterCategory] = useState<Record<string, string>>({})
+  const [activeSegmentId, setActiveSegmentId] = useState<string>('')
 
   // Settings modal
   const [showSettings, setShowSettings] = useState(false)
@@ -141,7 +111,8 @@ export default function DashboardPage() {
     setConfig(prev => ({ ...prev, widgets: prev.widgets.filter(w => w.id !== widgetId) }))
   }
 
-  function addWidget() {
+  function addWidget(row?: number) {
+    const maxRow = config.widgets.reduce((m, w) => Math.max(m, w.row), 0)
     const newWidget: Widget = {
       id: Math.random().toString(36).slice(2),
       type: 'bar',
@@ -149,10 +120,22 @@ export default function DashboardPage() {
       valueCol: numericCols[0] ?? '',
       groupCol: categoryCols[0] ?? '',
       period: 'monthly',
-      size: 'md',
+      row: row ?? maxRow + 1,
     }
     setConfig(prev => ({ ...prev, widgets: [...prev.widgets, newWidget] }))
   }
+
+  // 같은 row 위젯끼리 묶기
+  const widgetRows = useMemo(() => {
+    const map: Record<number, Widget[]> = {}
+    config.widgets.forEach(w => {
+      if (!map[w.row]) map[w.row] = []
+      map[w.row].push(w)
+    })
+    return Object.entries(map)
+      .sort(([a], [b]) => Number(a) - Number(b))
+      .map(([row, widgets]) => ({ row: Number(row), widgets }))
+  }, [config.widgets])
 
   async function handleSave() {
     await saveConfig(config)
@@ -237,7 +220,8 @@ export default function DashboardPage() {
         </div>
       </aside>
 
-      {/* Main */}
+      {/* Main + AI Panel */}
+      <div className="flex-1 flex overflow-hidden">
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <header className="bg-slate-900 border-b border-slate-800 px-6 py-3 flex items-center justify-between flex-shrink-0">
@@ -269,9 +253,13 @@ export default function DashboardPage() {
               </>
             ) : (
               <>
+                <button onClick={() => setShowAiChat(v => !v)}
+                  className={`text-xs px-3 py-1.5 rounded-lg transition font-medium ${showAiChat ? 'bg-purple-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'}`}>
+                  ✦ AI 편집
+                </button>
                 <button onClick={() => setEditMode(true)}
                   className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition">
-                  ✏ 대시보드 편집
+                  ✏ 수동 편집
                 </button>
                 <button onClick={() => router.push(`/dashboard/${id}/upload`)}
                   className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition">
@@ -281,6 +269,38 @@ export default function DashboardPage() {
             )}
           </div>
         </header>
+
+        {/* Filter Bar */}
+        {rows.length > 0 && (
+          <div className="bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center gap-2 flex-wrap flex-shrink-0">
+            {categoryCols.slice(0, 4).map(col => (
+              <select key={col} value={filterCategory[col] || ''}
+                onChange={e => setFilterCategory(prev => ({ ...prev, [col]: e.target.value }))}
+                className="bg-slate-800 border border-slate-700 text-slate-300 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <option value="">{col} 전체</option>
+                {[...new Set(rows.map(r => String(r[col] ?? '')))].slice(0, 50).map(v => (
+                  <option key={v} value={v}>{v}</option>
+                ))}
+              </select>
+            ))}
+            {config.segments.length > 0 && (
+              <select value={activeSegmentId}
+                onChange={e => setActiveSegmentId(e.target.value)}
+                className="bg-slate-800 border border-slate-700 text-slate-300 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-purple-500">
+                <option value="">세그먼트 전체</option>
+                {config.segments.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            )}
+            {(Object.values(filterCategory).some(Boolean) || activeSegmentId) && (
+              <button onClick={() => { setFilterCategory({}); setActiveSegmentId('') }}
+                className="text-xs text-slate-500 hover:text-red-400 transition ml-auto">
+                ✕ 필터 초기화
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Edit Mode Banner */}
         {editMode && (
@@ -303,33 +323,79 @@ export default function DashboardPage() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-4 auto-rows-min">
-              {config.widgets.map(widget => (
-                <div key={widget.id} className={SIZE_CLASS[widget.size] ?? 'col-span-1'}>
-                  <WidgetCard
-                    widget={widget}
-                    rows={rows}
-                    segments={config.segments}
-                    editMode={editMode}
-                    onUpdate={(patch) => updateWidget(widget.id, patch)}
-                    onRemove={() => removeWidget(widget.id)}
-                  />
-                </div>
-              ))}
+            <div className="space-y-4">
+              {widgetRows.map(({ row, widgets: rowWidgets }) => {
+                const globalFilteredRows = rows.filter(r => {
+                  for (const [col, val] of Object.entries(filterCategory)) {
+                    if (val && String(r[col] ?? '') !== val) return false
+                  }
+                  if (activeSegmentId) {
+                    const seg = config.segments.find(s => s.id === activeSegmentId)
+                    if (seg) return applySegment([r], seg).length > 0
+                  }
+                  return true
+                })
+                return (
+                  <div key={row} className="flex gap-4">
+                    {rowWidgets.map(widget => (
+                      <div key={widget.id} className="flex-1 min-w-0">
+                        <WidgetCard
+                          widget={widget}
+                          rows={globalFilteredRows}
+                          segments={config.segments}
+                          editMode={editMode}
+                          onUpdate={(patch) => updateWidget(widget.id, patch)}
+                          onRemove={() => removeWidget(widget.id)}
+                        />
+                      </div>
+                    ))}
+                    {editMode && (
+                      <button onClick={() => addWidget(row)}
+                        className="w-12 flex-shrink-0 border-2 border-dashed border-slate-800 hover:border-blue-500 rounded-xl text-slate-700 hover:text-blue-400 transition flex items-center justify-center text-lg">
+                        +
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
 
               {editMode && (
-                <div className="col-span-1">
-                  <button onClick={addWidget}
-                    className="w-full h-40 border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl text-slate-600 hover:text-blue-400 transition flex flex-col items-center justify-center gap-2">
-                    <span className="text-2xl">+</span>
-                    <span className="text-xs">위젯 추가</span>
-                  </button>
-                </div>
+                <button onClick={() => addWidget()}
+                  className="w-full h-16 border-2 border-dashed border-slate-800 hover:border-blue-500 rounded-xl text-slate-600 hover:text-blue-400 transition flex items-center justify-center gap-2 text-sm">
+                  <span>+</span> 새 줄에 위젯 추가
+                </button>
               )}
             </div>
           )}
         </main>
       </div>
+
+      </div>{/* end flex-1 main */}
+
+      {/* AI Chat Panel */}
+      {showAiChat && (
+        <div className="w-80 flex-shrink-0 bg-slate-900 border-l border-slate-800 flex flex-col">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+            <div className="flex items-center gap-2">
+              <span className="text-purple-400">✦</span>
+              <span className="text-sm font-medium">AI 대시보드 편집</span>
+            </div>
+            <button onClick={() => setShowAiChat(false)} className="text-slate-500 hover:text-white transition">✕</button>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <AiChat
+              config={config}
+              columns={[...Object.keys(rows[0] ?? {})]}
+              onConfigChange={(newConfig) => {
+                setConfig(newConfig)
+                saveConfig(newConfig)
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      </div>{/* end flex-1 flex */}
 
       {/* Segment Builder Modal */}
       {showSegmentBuilder && (
