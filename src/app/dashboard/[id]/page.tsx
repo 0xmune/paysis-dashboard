@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic'
 const WidgetCard = dynamic(() => import('@/components/WidgetCard'), { ssr: false })
 const SegmentBuilder = dynamic(() => import('@/components/SegmentBuilder'), { ssr: false })
 const AiChat = dynamic(() => import('@/components/AiChat'), { ssr: false })
+const ErrorBoundary = dynamic(() => import('@/components/ErrorBoundary'), { ssr: false })
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: '전체 대시보드', icon: '▦' },
@@ -377,14 +378,16 @@ export default function DashboardPage() {
                     <div className="flex gap-4">
                       {rowWidgets.map(widget => (
                         <div key={widget.id} className="flex-1 min-w-0">
-                          <WidgetCard
-                            widget={widget}
-                            rows={filteredRows}
-                            segments={config.segments}
-                            editMode={editMode}
-                            onUpdate={patch => updateWidget(widget.id, patch)}
-                            onRemove={() => removeWidget(widget.id)}
-                          />
+                          <ErrorBoundary label={widget.title}>
+                            <WidgetCard
+                              widget={widget}
+                              rows={filteredRows}
+                              segments={config.segments}
+                              editMode={editMode}
+                              onUpdate={patch => updateWidget(widget.id, patch)}
+                              onRemove={() => removeWidget(widget.id)}
+                            />
+                          </ErrorBoundary>
                         </div>
                       ))}
                       {editMode && (
