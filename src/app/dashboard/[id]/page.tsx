@@ -175,11 +175,11 @@ export default function DashboardPage() {
   return (
     <div className="flex h-screen bg-gray-50 text-gray-900 overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-52 flex-shrink-0 bg-white flex flex-col border-r border-gray-200">
-        <div className="px-4 py-5 border-b border-gray-200">
+      <aside className="w-52 flex-shrink-0 bg-slate-900 flex flex-col border-r border-slate-800">
+        <div className="px-4 py-5 border-b border-slate-800">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center text-xs font-bold text-white">S</div>
-            <span className="font-semibold text-sm text-gray-800">Segment Analytics</span>
+            <span className="font-semibold text-sm text-white">Segment Analytics</span>
           </div>
         </div>
 
@@ -192,26 +192,26 @@ export default function DashboardPage() {
                 if (item.id === 'settings') { setShowSettings(true); setActiveNav('settings'); return }
                 setActiveNav(item.id)
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition ${activeNav === item.id ? 'bg-blue-600 text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition ${activeNav === item.id ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
             >
               <span>{item.icon}</span>{item.label}
             </button>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-gray-200 space-y-1.5">
-          <p className="text-xs text-gray-400 font-medium mb-2">프로젝트 정보</p>
+        <div className="p-4 border-t border-slate-800 space-y-1.5">
+          <p className="text-xs text-slate-500 font-medium mb-2">프로젝트 정보</p>
           <div className="flex justify-between text-xs">
-            <span className="text-gray-400">레코드</span>
-            <span className="text-gray-700">{rows.length.toLocaleString()}건</span>
+            <span className="text-slate-500">레코드</span>
+            <span className="text-slate-300">{rows.length.toLocaleString()}건</span>
           </div>
           <div className="flex justify-between text-xs">
-            <span className="text-gray-400">세그먼트</span>
-            <span className="text-gray-700">{config.segments.length}개</span>
+            <span className="text-slate-500">세그먼트</span>
+            <span className="text-slate-300">{config.segments.length}개</span>
           </div>
           <div className="flex justify-between text-xs">
-            <span className="text-gray-400">위젯</span>
-            <span className="text-gray-700">{config.widgets.length}개</span>
+            <span className="text-slate-500">위젯</span>
+            <span className="text-slate-300">{config.widgets.length}개</span>
           </div>
           <button onClick={() => router.push('/')}
             className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 rounded-lg transition font-medium">
