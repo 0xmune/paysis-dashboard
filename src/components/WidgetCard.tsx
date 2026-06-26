@@ -6,7 +6,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
 import { Widget, Period, Row } from '@/lib/types'
-import { sumCol, groupBy, aggregateByPeriod, detectColumns, fmt, applySegment } from '@/lib/dataUtils'
+import { sumCol, groupBy, aggregateByPeriod, detectColumns, fmt, applySegment, calcPeriodChange } from '@/lib/dataUtils'
 import type { Segment } from '@/lib/types'
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#f97316']
@@ -22,18 +22,6 @@ type Props = {
 
 const PERIOD_LABELS: Record<Period, string> = { daily: '일별', weekly: '주별', monthly: '월별' }
 
-function calcChange(rows: Row[], valueCol: string, dateCols: string[]): number | null {
-  if (!dateCols.length || rows.length < 4) return null
-  const dateCol = dateCols[0]
-  const sorted = [...rows].sort((a, b) =>
-    String(a[dateCol] ?? '').localeCompare(String(b[dateCol] ?? ''))
-  )
-  const mid = Math.floor(sorted.length / 2)
-  const prev = sumCol(sorted.slice(0, mid), valueCol)
-  const curr = sumCol(sorted.slice(mid), valueCol)
-  if (prev === 0) return null
-  return ((curr - prev) / prev) * 100
-}
 
 export default function WidgetCard({ widget, rows, segments, editMode, onUpdate, onRemove }: Props) {
   const [period, setPeriod] = useState<Period>(widget.period || 'monthly')
@@ -56,7 +44,7 @@ export default function WidgetCard({ widget, rows, segments, editMode, onUpdate,
   })()
 
   const totalValue = Math.round(sumCol(filteredRows, widget.valueCol))
-  const change = widget.type === 'kpi' ? calcChange(filteredRows, widget.valueCol, dateCols) : null
+  const change = widget.type === 'kpi' ? calcPeriodChange(filteredRows, widget.valueCol, dateCols) : null
 
   const tooltipStyle = {
     background: '#fff', border: '1px solid #f3f4f6',

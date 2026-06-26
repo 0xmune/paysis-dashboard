@@ -11,6 +11,7 @@ const WidgetCard = dynamic(() => import('@/components/WidgetCard'), { ssr: false
 const SegmentBuilder = dynamic(() => import('@/components/SegmentBuilder'), { ssr: false })
 const AiChat = dynamic(() => import('@/components/AiChat'), { ssr: false })
 const ErrorBoundary = dynamic(() => import('@/components/ErrorBoundary'), { ssr: false })
+const DraggableGrid = dynamic(() => import('@/components/DraggableGrid'), { ssr: false })
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: '전체 대시보드', icon: '▦' },
@@ -382,52 +383,26 @@ export default function DashboardPage() {
               </button>
             </div>
           ) : (
-            <div className="space-y-6">
-              {widgetRows.map(({ row, widgets: rowWidgets }, rowIdx) => {
-                const isKpiRow = rowWidgets.every(w => w.type === 'kpi')
-                return (
-                  <section key={row}>
-                    {isKpiRow && (
-                      <div className="flex items-center gap-3 mb-3">
-                        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                          {rowIdx === 0 ? '핵심 KPI' : `KPI 그룹 ${rowIdx + 1}`}
-                        </h2>
-                        <div className="flex-1 h-px bg-gray-100" />
-                        {hasFilter && <span className="text-xs text-blue-500 font-medium">필터 적용됨</span>}
-                      </div>
-                    )}
-                    <div className="flex gap-4">
-                      {rowWidgets.map(widget => (
-                        <div key={widget.id} className="flex-1 min-w-0">
-                          <ErrorBoundary label={widget.title}>
-                            <WidgetCard
-                              widget={widget}
-                              rows={filteredRows}
-                              segments={config.segments}
-                              editMode={editMode}
-                              onUpdate={patch => updateWidget(widget.id, patch)}
-                              onRemove={() => removeWidget(widget.id)}
-                            />
-                          </ErrorBoundary>
-                        </div>
-                      ))}
-                      {editMode && (
-                        <button onClick={() => addWidget(row)}
-                          className="w-14 flex-shrink-0 border-2 border-dashed border-gray-200 hover:border-blue-300 rounded-2xl text-gray-300 hover:text-blue-400 transition flex items-center justify-center text-2xl font-light">
-                          +
-                        </button>
-                      )}
-                    </div>
-                  </section>
-                )
-              })}
-              {editMode && (
-                <button onClick={() => addWidget()}
-                  className="w-full h-16 border-2 border-dashed border-gray-200 hover:border-blue-300 rounded-2xl text-gray-300 hover:text-blue-400 transition flex items-center justify-center gap-2 text-sm font-medium">
-                  + 새 줄에 위젯 추가
-                </button>
+            <DraggableGrid
+              config={config}
+              onReorder={widgets => setConfig(prev => ({ ...prev, widgets }))}
+              editMode={editMode}
+              onAddInRow={row => addWidget(row)}
+              onAddNewRow={() => addWidget()}
+            >
+              {(widget) => (
+                <ErrorBoundary label={widget.title}>
+                  <WidgetCard
+                    widget={widget}
+                    rows={filteredRows}
+                    segments={config.segments}
+                    editMode={editMode}
+                    onUpdate={patch => updateWidget(widget.id, patch)}
+                    onRemove={() => removeWidget(widget.id)}
+                  />
+                </ErrorBoundary>
               )}
-            </div>
+            </DraggableGrid>
           )}
         </main>
       </div>
