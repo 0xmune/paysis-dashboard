@@ -86,10 +86,7 @@ export default function DashboardPage() {
 
   const { numericCols, categoryCols, dateCols } = useMemo(() => detectColumns(rows), [rows])
 
-  useEffect(() => {
-    if (!loading && rows.length > 0 && config.widgets.length === 0)
-      setConfig(defaultConfig(numericCols, categoryCols))
-  }, [loading, rows, numericCols, categoryCols, config.widgets.length])
+  // 자동 위젯 생성 없음 - AI로 직접 구성
 
   const saveConfig = useCallback(async (cfg: DashboardConfig) => {
     setSaving(true)
@@ -353,11 +350,39 @@ export default function DashboardPage() {
               <div className="w-20 h-20 bg-gray-100 rounded-3xl flex items-center justify-center text-4xl shadow-inner">📊</div>
               <div className="text-center">
                 <p className="text-gray-700 font-semibold mb-1">데이터가 없어요</p>
-                <p className="text-gray-400 text-sm">파일을 업로드하면 자동으로 대시보드가 생성돼요</p>
+                <p className="text-gray-400 text-sm">파일을 업로드하면 AI로 대시보드를 구성할 수 있어요</p>
               </div>
               <button onClick={() => router.push(`/dashboard/${id}/upload`)}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition">
                 데이터 업로드하기
+              </button>
+            </div>
+          ) : config.widgets.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full gap-6 py-20">
+              <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-blue-100 rounded-3xl flex items-center justify-center text-5xl shadow-inner">✦</div>
+              <div className="text-center">
+                <p className="text-gray-800 font-bold text-lg mb-2">AI로 대시보드를 만들어보세요</p>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  {rows.length.toLocaleString()}건의 데이터가 준비됐어요.<br/>
+                  사용 가능한 컬럼: <span className="text-blue-500 font-medium">{[...numericCols, ...categoryCols].slice(0, 5).join(', ')}{[...numericCols, ...categoryCols].length > 5 ? ' 외...' : ''}</span>
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 w-full max-w-sm">
+                {[
+                  'KPI 카드와 주요 차트로 대시보드 만들어줘',
+                  `${numericCols[0] ?? '수치'} 추이 라인 차트 만들어줘`,
+                  `${categoryCols[0] ?? '카테고리'}별 파이 차트 추가해줘`,
+                ].map((suggestion, i) => (
+                  <button key={i}
+                    onClick={() => setShowAiChat(true)}
+                    className="text-sm text-left bg-white border border-gray-200 hover:border-purple-300 hover:bg-purple-50 text-gray-600 hover:text-purple-700 px-4 py-3 rounded-xl transition shadow-sm">
+                    ✦ &ldquo;{suggestion}&rdquo;
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setShowAiChat(true)}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-md transition">
+                ✦ AI 편집 열기
               </button>
             </div>
           ) : (

@@ -6,18 +6,20 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.GROQ_API_KEY
   if (!apiKey) return NextResponse.json({ error: 'GROQ_API_KEY가 없습니다.' }, { status: 500 })
 
-  const systemPrompt = `You are a dashboard configuration assistant. Modify the config JSON based on user commands and return ONLY valid JSON with no explanation, no markdown, no code blocks.
+  const systemPrompt = `You are a dashboard configuration assistant. Return ONLY valid JSON, no explanation, no markdown, no code blocks.
 
-Available columns (use EXACT names): ${JSON.stringify(columns)}
+Available columns (use EXACT names only): ${JSON.stringify(columns)}
 
 Current config: ${JSON.stringify(config)}
 
-Rules:
+CRITICAL RULES:
 - Return ONLY: {"widgets":[...],"segments":[...]}
-- widget fields: id(string), type("kpi"|"bar"|"line"|"pie"|"table"), title(string), valueCol(MUST be from columns list), groupCol(MUST be from columns list or ""), period("daily"|"weekly"|"monthly"), row(number 0-10)
-- New widget id: use random 6-char string
-- Keep existing widgets unless user says to remove/change them
-- Use EXACT column names from the list above`
+- ALWAYS keep ALL existing widgets unless user explicitly says to DELETE or REMOVE a specific widget
+- When user says "add", append new widget(s) to existing widgets array - DO NOT replace existing ones
+- widget fields: id(string), type("kpi"|"bar"|"line"|"pie"|"table"), title(string), valueCol(MUST be exact column name), groupCol(exact column name or ""), period("daily"|"weekly"|"monthly"), row(number)
+- New widget row: use max existing row + 1
+- New widget id: random 6-char alphanumeric string
+- NEVER use column names that are not in the available columns list`
 
   try {
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
