@@ -248,10 +248,6 @@ export default function DashboardPage() {
               </>
             ) : (
               <>
-                <button onClick={() => setShowSettings(true)}
-                  className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 border border-gray-200 bg-white hover:bg-gray-50 px-3.5 py-1.5 rounded-xl transition">
-                  ⚙ 프로젝트 설정
-                </button>
                 <button onClick={() => setShowAiChat(v => !v)}
                   className={`flex items-center gap-1.5 text-sm px-4 py-1.5 rounded-xl font-semibold transition border ${
                     showAiChat ? 'bg-purple-600 text-white border-purple-600' : 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100'
@@ -469,39 +465,76 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* Settings Modal */}
+      {/* Project Management Modal */}
       {showSettings && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-5">
-              <h2 className="text-base font-bold text-white">프로젝트 설정</h2>
-              <p className="text-xs text-slate-400 mt-0.5">{id.slice(0, 7).toUpperCase()}</p>
-            </div>
-            <div className="p-6 space-y-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-5 flex items-center justify-between">
               <div>
-                <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase tracking-wide">프로젝트 이름</label>
-                <input type="text" value={newName} onChange={e => setNewName(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900" />
+                <h2 className="text-base font-bold text-white">프로젝트 관리</h2>
+                <p className="text-xs text-slate-400 mt-0.5">ID: {id.slice(0, 7).toUpperCase()}</p>
               </div>
+              <button onClick={() => { setShowSettings(false); setSettingsPassword(''); setSettingsError(''); setActiveNav('dashboard') }}
+                className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition">✕</button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: '전체 레코드', value: rows.length.toLocaleString() + '건' },
+                  { label: '위젯', value: config.widgets.length + '개' },
+                  { label: '세그먼트', value: config.segments.length + '개' },
+                ].map(({ label, value }) => (
+                  <div key={label} className="bg-gray-50 rounded-xl p-3 text-center">
+                    <p className="text-lg font-bold text-gray-800">{value}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Upload more */}
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-blue-800">추가 데이터 업로드</p>
+                  <p className="text-xs text-blue-500 mt-0.5">기존 데이터와 자동으로 중복 제거 후 병합돼요</p>
+                </div>
+                <button onClick={() => { setShowSettings(false); router.push(`/dashboard/${id}/upload`) }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-xl font-semibold transition flex-shrink-0">
+                  ↑ 업로드
+                </button>
+              </div>
+
+              {/* Rename */}
               <div>
-                <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase tracking-wide">비밀번호 확인</label>
+                <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase tracking-wide">프로젝트 이름 변경</label>
+                <div className="flex gap-2">
+                  <input type="text" value={newName} onChange={e => setNewName(e.target.value)}
+                    className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900" />
+                  <button onClick={handleRename} disabled={settingsLoading || !newName || !settingsPassword}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition disabled:opacity-50 flex-shrink-0">
+                    변경
+                  </button>
+                </div>
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase tracking-wide">비밀번호 확인 (이름 변경 / 삭제 시 필요)</label>
                 <input type="password" value={settingsPassword} onChange={e => setSettingsPassword(e.target.value)}
                   placeholder="현재 비밀번호 입력"
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900" />
               </div>
+
               {settingsError && <p className="text-red-500 text-sm bg-red-50 rounded-xl px-4 py-2.5">{settingsError}</p>}
-              <div className="flex gap-2 pt-2">
-                <button onClick={handleRename} disabled={settingsLoading || !newName || !settingsPassword}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-semibold transition disabled:opacity-50">
-                  {settingsLoading ? '처리 중...' : '이름 변경'}
-                </button>
+
+              {/* Delete */}
+              <div className="border-t border-gray-100 pt-4">
+                <p className="text-xs text-gray-400 mb-3">위험 구역 — 삭제하면 모든 데이터와 설정이 영구 삭제돼요.</p>
                 <button onClick={handleDelete} disabled={settingsLoading || !settingsPassword}
-                  className="px-4 bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-xl text-sm font-semibold transition disabled:opacity-50">
-                  삭제
-                </button>
-                <button onClick={() => { setShowSettings(false); setSettingsPassword(''); setSettingsError(''); setActiveNav('dashboard') }}
-                  className="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 py-2.5 rounded-xl text-sm font-medium transition">
-                  취소
+                  className="w-full bg-red-50 hover:bg-red-500 text-red-500 hover:text-white border border-red-200 hover:border-red-500 py-2.5 rounded-xl text-sm font-semibold transition disabled:opacity-40">
+                  {settingsLoading ? '처리 중...' : '🗑 프로젝트 삭제'}
                 </button>
               </div>
             </div>
